@@ -459,9 +459,21 @@ fn run_expansion_worker(
 
             std::thread::sleep(std::time::Duration::from_millis(10));
 
-            // Resolve variables, then type the expansion text
+            // Resolve variables, then type the expansion text.
+            // Lines are typed and joined with an explicit Enter keypress instead of
+            // relying on enigo.text() to interpret '\n', since many target apps
+            // (e.g. rich text editors) ignore raw newline characters in typed text.
             let (text, cursor_offset) = process_variables(&expansion);
-            let _ = enigo.text(&text);
+            let normalized = text.replace("\r\n", "\n");
+            let mut lines = normalized.split('\n').peekable();
+            while let Some(line) = lines.next() {
+                if !line.is_empty() {
+                    let _ = enigo.text(line);
+                }
+                if lines.peek().is_some() {
+                    let _ = enigo.key(Key::Return, Direction::Click);
+                }
+            }
 
             // Track usage statistics (characters saved = typed text minus the abbreviation)
             {

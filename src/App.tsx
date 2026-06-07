@@ -266,6 +266,7 @@ function App() {
             title="Filtrer par groupe"
           >
             <option value="">Tous les groupes</option>
+
             <option value="__none__">Sans groupe</option>
             {groups.map((g) => (
               <option key={g} value={g}>
